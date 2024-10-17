@@ -2,6 +2,11 @@ import argparse
 import subprocess
 import os
 import xml.etree.ElementTree as ET
+import pyfiglet
+
+# This is a first stab at providing a simple but effective quick and free EASM tool
+ascii_banner = pyfiglet.figlet_format("EASM Scanner")
+print(ascii_banner)
 
 def run_masscan(ip_ranges, rate):
     # Run masscan for all ports on the provided ranges
