@@ -75,7 +75,9 @@ python easm_scanner.py --ip_range 192.168.1.0/24 --rate 1000 --nmap_options "-sV
 
 
 # Parse the scan results into the SQLite database
-python nmap_to_sqlite.py /path/to/final_scan_results.xml /path/to/whatweb_results.xml
+python scan_to_sqlite.py /path/to/final_scan_results.xml /path/to/whatweb_results.xml
 
 # Export scan results to JSON for Grafana
-python export_to_json.py
+python sqlite_to_json.py
+
+I will be adding a section to cover building a container for Grafana
