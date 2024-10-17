@@ -2,7 +2,7 @@ EASM Scanner with SQLite Parser and Grafana Dashboard
 
 Overview
 
-This project provides a comprehensive solution for External Attack Surface Management (EASM), combining network scanning, data parsing, and visualization. It uses masscan, Nmap, and WhatWeb to identify and analyze open services, web technologies, and potential vulnerabilities across a target network. The results are parsed into a SQLite database for storage and further analysis. A Grafana JSON model is also included for visualizing the scan data through a dynamic and multi-panel dashboard.
+This project provides a simple solution for External Attack Surface Management (EASM), combining network scanning, data parsing, and visualization. Solutions available were either way too expensive or were just scripts to run Masscan and Nmap. I needed a fast tool that could much more than that dynamically. This tool leverages masscan, Nmap, and WhatWeb to identify and analyze open services, web technologies, and potential vulnerabilities across a target network. The results are parsed into a SQLite database for storage and further analysis. A Grafana JSON model is also included for visualizing the scan data through a dynamic and multi-panel dashboard.
 
 Features
 
