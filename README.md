@@ -5,17 +5,29 @@ Overview
 This project provides a comprehensive solution for External Attack Surface Management (EASM), combining network scanning, data parsing, and visualization. It uses masscan, Nmap, and WhatWeb to identify and analyze open services, web technologies, and potential vulnerabilities across a target network. The results are parsed into a SQLite database for storage and further analysis. A Grafana JSON model is also included for visualizing the scan data through a dynamic and multi-panel dashboard.
 
 Features
+
 -Automated Scanning Workflow
+
 -Uses masscan for high-speed port scanning.
+
 -Performs detailed service and version detection with Nmap.
+
 -Analyzes web server technologies with WhatWeb.
+
 -Data Parsing and Storage
+
 -Parses masscan, Nmap, and WhatWeb results into a structured SQLite database.
+
 -Supports detailed data storage for hosts, open ports, services, and web technologies.
+
 -Handles errors gracefully to ensure consistent data insertion.
+
 -Visualization with Grafana
+
 -Provides a comprehensive Grafana JSON model for creating a multi-panel dashboard.
+
 -Dashboard panels include total hosts, total ports, open services by type, ports per host, HTTP details, SSL certificate information, and more.
+
 -Facilitates data-driven decision-making by presenting scan results in an easily interpretable format.
 
 Components
