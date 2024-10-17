@@ -48,6 +48,9 @@ Copy code
 # Run the EASM Scanner with masscan, Nmap, and WhatWeb
 python easm_scanner.py --ip_range 192.168.1.0/24 --rate 1000 --nmap_options "-sV" --scan_level 3
 
+![image](https://github.com/user-attachments/assets/7ee07187-cae5-4708-8cd2-797090b452a7)
+
+
 # Parse the scan results into the SQLite database
 python nmap_to_sqlite.py /path/to/final_scan_results.xml /path/to/whatweb_results.xml
 
