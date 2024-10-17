@@ -106,7 +106,7 @@ def main():
     merge_results()
 
     # Provide instructions for Grafana dashboard setup
-    print("[+] To visualize, import 'final_scan_results.xml' into Grafana or custom web dashboard.")
+    print("[+] To visualize, first parse 'final_scan_results.xml' into Sqlite3 database using scan-to-sqlite.py. Follow that up with sqlite-to-json.py to build json model for Grafana or custom web dashboard.")
 
 if __name__ == "__main__":
     main()
