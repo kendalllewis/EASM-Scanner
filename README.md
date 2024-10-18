@@ -62,14 +62,14 @@ Import the provided Grafana JSON model into your Grafana instance.
 Connect Grafana to the SQLite database or use a middleware service to serve the data as a REST API.
 
 Prerequisites
--masscan, Nmap, WhatWeb installed on your system.
+-Masscan, Nmap, WhatWeb installed on your system.
 -Python 3.x with the sqlite3 library.
--Grafana for dashboard visualization.
+-Docker and Grafana for dashboard visualization.
 
 Example Commands
 
 # Run the EASM Scanner with masscan, Nmap, and WhatWeb
-python easm_scanner.py --ip_range 192.168.1.0/24 --rate 1000 --nmap_options "-sV" --scan_level 3
+python easmscan.py --ip_range 192.168.1.0/24 --rate 1000 --nmap_options "-sV" --scan_level 3
 
 ![image](https://github.com/user-attachments/assets/7ee07187-cae5-4708-8cd2-797090b452a7)
 
