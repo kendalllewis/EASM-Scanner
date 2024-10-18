@@ -68,18 +68,22 @@ Prerequisites
 -Python 3.x with the sqlite3 library.
 -Docker and Grafana for dashboard visualization.
 
-Example Commands
+Example Commands and Sequence
 
 # Run the EASM Scanner with masscan, Nmap, and WhatWeb
 python easmscan.py --ip_range 192.168.1.0/24 --rate 1000 --nmap_options "-sV" --scan_level 3
 
 ![image](https://github.com/user-attachments/assets/7ee07187-cae5-4708-8cd2-797090b452a7)
 
+# Create the database:
+python create_db.py --create-db
 
 # Parse the scan results into the SQLite database
-python scan_to_sqlite.py /path/to/final_scan_results.xml /path/to/whatweb_results.xml
+python scan_to_sqlite.py --xml-file final_scan_results.xml
 
 # Export scan results to JSON for Grafana
-python sqlite_to_json.py
+python sqlite_to_json.py --export-json
+
+
 
 I will be adding a section to cover building a container for Grafana
