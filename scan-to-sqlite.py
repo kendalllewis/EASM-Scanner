@@ -13,7 +13,7 @@ def create_database():
                         hostname TEXT,
                         state TEXT)''')
 
-    # Create ports table
+    # Create ports table, may need to expand for other Nmap or scanner options
     cursor.execute('''CREATE TABLE IF NOT EXISTS ports (
                         id INTEGER PRIMARY KEY,
                         host_id INTEGER,
@@ -27,7 +27,7 @@ def create_database():
                         ssl_issuer TEXT,
                         FOREIGN KEY(host_id) REFERENCES hosts(id))''')
 
-    # Create WhatWeb table for web application details
+    # Create WhatWeb table for web application details, needs work
     cursor.execute('''CREATE TABLE IF NOT EXISTS whatweb (
                         id INTEGER PRIMARY KEY,
                         host_id INTEGER,
@@ -125,5 +125,5 @@ def parse_nmap_and_whatweb_to_db(nmap_file, whatweb_file):
 create_database()
 
 # Parse Nmap and WhatWeb files and insert data into the database
-parse_nmap_and_whatweb_to_db("final_scan_results.xml", "whatweb_results.xml")
+parse_nmap_and_whatweb_to_db("final_scan_results.xml")
 
