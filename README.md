@@ -73,6 +73,7 @@ Example Commands and Sequence
 # Run the EASM Scanner with masscan, Nmap, and WhatWeb
 1. python3 easmscan.py --ip_range 192.168.1.0/24 --rate 10000 --nmap_options "-sV" --scan_level 3
 Note: This will produce the final_scan_results.xml file that will be used to create the SQLite3 database for Grafana Dashboards.
+![image](https://github.com/user-attachments/assets/8244884d-3d11-4367-a085-6112be42ae8d)
 
 # Create the database:
 2. python3 create_db.py
@@ -81,5 +82,6 @@ Note: This will produce the final_scan_results.xml file that will be used to cre
 3. Create_db.py will use final_scan_results.xml and will produce a scan_results.db that may be used as the datasource in Grafana for dashboards.
 
 4. Move to Grafana and build dashboards.
+
 
 I will be adding a section to cover building a container for Grafana and then setting up some common dashboards in Grafana.
