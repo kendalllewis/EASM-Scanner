@@ -2,7 +2,7 @@ import sqlite3
 import xml.etree.ElementTree as ET
 
 def create_database():
-    # Create the SQLite3 database and tables
+    # Create the SQLite3 database and tables. PLEASE remember that this must use the final_scan_results.xml that was created during the scan. This should be in the same directory.
     conn = sqlite3.connect("scan_results.db")
     cursor = conn.cursor()
 
