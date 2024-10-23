@@ -43,7 +43,7 @@ Parses the combined scan results and stores the data in an SQLite database.
 Database schema includes tables for hosts, ports, and WhatWeb results, with fields for IP, service details, web plugins, SSL information, etc.
 
 Grafana JSON Model:
-JSON configuration for creating a Grafana dashboard.
+JSON configuration for creating a Grafana dashboard. There are some available in the Grafana public repository, which you can customize once imported.
 Pre-configured panels for visualizing network scan data, including tables and charts for service distribution, host analysis, and web technologies.
 Supports interactive filtering and drill-down capabilities.
 
@@ -60,8 +60,8 @@ Use the SQLite Parser script to parse the XML output from the scans and populate
 
 3. Visualize with Grafana:
 
-Import the provided Grafana JSON model into your Grafana instance.
-Connect Grafana to the SQLite database or use a middleware service to serve the data as a REST API.
+Establish a Grafana JSON model in your Grafana instance.
+Connect Grafana to the SQLite database or use a middleware service to serve the data as a REST API. I would love to get there soon.
 
 Prerequisites
 -Masscan, Nmap, WhatWeb installed on your system.
