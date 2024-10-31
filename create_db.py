@@ -2,17 +2,18 @@ import sqlite3
 import xml.etree.ElementTree as ET
 
 def create_database():
-    # Create the SQLite3 database and tables. PLEASE remember that this must use the final_scan_results.xml that was created during the scan. This should be in the same directory.
+    # Create the SQLite3 database and tables
     conn = sqlite3.connect("scan_results.db")
     cursor = conn.cursor()
 
-    # Create tables for Nmap, WhatWeb, and Certificates data
+    # Create tables for Nmap, WhatWeb, and Certificates data with 'updated_at' columns
     cursor.execute('''CREATE TABLE IF NOT EXISTS hosts (
                         id INTEGER PRIMARY KEY,
                         ip TEXT,
                         hostname TEXT,
                         os TEXT,
-                        state TEXT)''')
+                        state TEXT,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS ports (
                         id INTEGER PRIMARY KEY,
@@ -23,6 +24,7 @@ def create_database():
                         service TEXT,
                         product TEXT,
                         version TEXT,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY(host_id) REFERENCES hosts(id))''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS whatweb (
@@ -32,9 +34,10 @@ def create_database():
                         plugin TEXT,
                         version TEXT,
                         description TEXT,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY(host_id) REFERENCES hosts(id))''')
 
-    # Create a table for SSL/TLS certificate details
+    # Create a table for SSL/TLS certificate details with 'updated_at'
     cursor.execute('''CREATE TABLE IF NOT EXISTS certificates (
                         id INTEGER PRIMARY KEY,
                         host_id INTEGER,
@@ -44,7 +47,37 @@ def create_database():
                         valid_from TEXT,
                         valid_until TEXT,
                         expiration_days INTEGER,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY(host_id) REFERENCES hosts(id))''')
+
+    conn.commit()
+    conn.close()
+
+def create_triggers():
+    # Connect to the database to create triggers
+    conn = sqlite3.connect("scan_results.db")
+    cursor = conn.cursor()
+
+    # Create triggers to automatically update the 'updated_at' column on insert and update
+    tables = ["hosts", "ports", "whatweb", "certificates"]
+    for table in tables:
+        cursor.execute(f'''
+            CREATE TRIGGER IF NOT EXISTS update_{table}_timestamp
+            AFTER UPDATE ON {table}
+            FOR EACH ROW
+            BEGIN
+                UPDATE {table} SET updated_at = CURRENT_TIMESTAMP WHERE id = OLD.id;
+            END;
+        ''')
+
+        cursor.execute(f'''
+            CREATE TRIGGER IF NOT EXISTS insert_{table}_timestamp
+            AFTER INSERT ON {table}
+            FOR EACH ROW
+            BEGIN
+                UPDATE {table} SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            END;
+        ''')
 
     conn.commit()
     conn.close()
@@ -156,6 +189,8 @@ def parse_xml_to_db(xml_file):
 # Create the database and tables
 create_database()
 
+# Create triggers for automatic timestamp updates
+create_triggers()
+
 # Parse the final_scan_results.xml file and insert data into the database
 parse_xml_to_db("final_scan_results.xml")
-
