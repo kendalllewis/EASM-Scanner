@@ -11,7 +11,7 @@ def read_art_file():
     except FileNotFoundError:
         print("[!] art.txt file not found.")
 
-# List of common UDP ports for scanning
+# List of common UDP ports for scanning, which may be added to at any time
 COMMON_UDP_PORTS = "53,67,68,69,123,137,161,162,500,514,520,623,1900,3391,4500,5353,5683"
 
 # Run Masscan for TCP/UDP
@@ -61,26 +61,26 @@ def run_nmap(targets, nmap_options, udp=False):
         subprocess.run(nmap_cmd, shell=True)
         print(f"[+] Nmap {'UDP' if udp else 'TCP'} scan completed for {ip}.")
 
-# Perform an indirect UDP scan using Nmap
+# Perform an indirect UDP scan using Nmap, which we have found to be effective when run on a host with tcp port found
 def indirect_udp_scan(host, tcp_port, udp_port):
     cmd = f"nmap -p {tcp_port},U:{udp_port} -sSU {host} -oX nmap_indirect_{host}_{udp_port}.xml"
     subprocess.run(cmd, shell=True)
     print(f"[+] Indirect scan for UDP port {udp_port} via TCP {tcp_port} on {host}.")
 
-# Run passive OS fingerprinting with p0f
+# Run passive OS fingerprinting with p0f, which is in testing now. Not sure about this
 def run_p0f(ip_range):
     cmd = f"p0f -i eth0 -o p0f_output_{ip_range.replace('/', '_')}.txt &"
     subprocess.run(cmd, shell=True)
     print(f"[+] Passive OS fingerprinting with p0f initiated for {ip_range}.")
 
-# Run WhatWeb for web service analysis
+# Run WhatWeb for web service analysis, which may include following all redirects in the future
 def run_whatweb(targets, scan_level):
     for target in targets:
         whatweb_cmd = f"whatweb -a {scan_level} {target} --open-timeout 6 --read-timeout 6 --log-xml=whatweb_output_{target.replace('.', '_')}.xml"
         subprocess.run(whatweb_cmd, shell=True)
     print("[+] WhatWeb scan completed.")
 
-# Perform reverse DNS lookup with dig
+# Perform reverse DNS lookup with dig, which is good for virtual web assets or multiple web instances running at one IP
 def run_dig(ip):
     ptr_records = []
     try:
