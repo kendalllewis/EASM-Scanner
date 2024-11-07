@@ -1,5 +1,1 @@
-msal==1.21.0              # For Microsoft Authentication Library (MSAL) to interact with Outlook API
-requests==2.28.1          # For making HTTP requests to download attachments from email
-sqlite3==3.36.0           # SQLite for database management (comes pre-installed with Python)
-pandas==1.5.3             # For data manipulation, if you're working with CSV files
-zipfile36==0.1.4          # For unzipping files, if the built-in zipfile module doesn't meet your needs
+
