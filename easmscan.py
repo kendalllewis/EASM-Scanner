@@ -1,6 +1,7 @@
 import argparse
 import subprocess
 import os
+import concurrent.futures
 import xml.etree.ElementTree as ET
 
 # Function to read contents of a file and print
@@ -24,14 +25,6 @@ def run_masscan(ip_ranges, rate, udp=False):
         subprocess.run(masscan_cmd, shell=True)
         print(f"[+] Masscan {'UDP' if udp else 'TCP'} scan completed for {ip_range}.")
 
-# Run Unicornscan for UDP
-def run_unicornscan(ip_range, udp_ports):
-    output_file = f"unicornscan_output_udp_{ip_range.replace('/', '_')}.txt"
-    cmd = f"unicornscan -mU -p {udp_ports} {ip_range} > {output_file}"
-    subprocess.run(cmd, shell=True)
-    print(f"[+] Unicornscan UDP scan completed for {ip_range}.")
-    return output_file
-
 # Parse Masscan output
 def parse_masscan_output(udp=False):
     hosts = {}
@@ -50,7 +43,7 @@ def parse_masscan_output(udp=False):
                 print(f"[!] Failed to parse {file}. Skipping.")
     return hosts
 
-# Run Nmap for targeted hosts
+# Run Nmap for targeted hosts with user-defined options
 def run_nmap(targets, nmap_options, udp=False):
     scan_type = "-sU" if udp else "-sS"
     protocol = "udp" if udp else "tcp"
@@ -59,28 +52,50 @@ def run_nmap(targets, nmap_options, udp=False):
         output_file = f"nmap_output_{ip}_{protocol}.xml"
         nmap_cmd = f"nmap {scan_type} {nmap_options} -p {ports} {ip} -oX {output_file}"
         subprocess.run(nmap_cmd, shell=True)
-        print(f"[+] Nmap {'UDP' if udp else 'TCP'} scan completed for {ip}.")
+        print(f"[+] Nmap {'UDP' if udp else 'TCP'} scan with options '{nmap_options}' completed for {ip}.")
 
-# Perform an indirect UDP scan using Nmap, which we have found to be effective when run on a host with tcp port found
+# Perform an indirect UDP scan using Nmap, filtering for open results on UDP ports only
 def indirect_udp_scan(host, tcp_port, udp_port):
-    cmd = f"nmap -p {tcp_port},U:{udp_port} -sSU {host} -oX nmap_indirect_{host}_{udp_port}.xml"
+    temp_output_file = f"nmap_indirect_{host}_{udp_port}_temp.xml"
+    cmd = f"nmap -p {tcp_port},U:{udp_port} -sSU {host} --host-timeout 10m --max-retries 2 -oX {temp_output_file}"
     subprocess.run(cmd, shell=True)
-    print(f"[+] Indirect scan for UDP port {udp_port} via TCP {tcp_port} on {host}.")
+    try:
+        tree = ET.parse(temp_output_file)
+        root = tree.getroot()
+        open_udp_found = False
 
-# Run passive OS fingerprinting with p0f, which is in testing now. Not sure about this
+        # Iterate over each port in the scan results
+        for port in root.findall(".//port"):
+            protocol = port.attrib.get("protocol", "")
+            state = port.find("state").attrib.get("state", "")
+
+            # Check only UDP ports and look for open state
+            if protocol == "udp" and state == "open":
+                open_udp_found = True
+                service_element = port.find("service")
+                service = service_element.attrib.get("name", "unknown") if service_element is not None else "unknown"
+                print(f"port:{udp_port}/udp state:open service:{service}")
+
+        # Only save the result if an open UDP port is found
+        if open_udp_found:
+            final_output_file = f"nmap_indirect_{host}_{udp_port}.xml"
+            os.rename(temp_output_file, final_output_file)
+            print(f"[+] Created {final_output_file} for host {host} on UDP port {udp_port}.")
+        else:
+            os.remove(temp_output_file)
+            print(f"[!] No open UDP ports found for {host} on port {udp_port}; skipped file creation.")
+
+    except ET.ParseError:
+        print(f"[!] Error parsing {temp_output_file}. Skipping.")
+        os.remove(temp_output_file)
+
+# Run passive OS fingerprinting with p0f
 def run_p0f(ip_range):
     cmd = f"p0f -i eth0 -o p0f_output_{ip_range.replace('/', '_')}.txt &"
     subprocess.run(cmd, shell=True)
-    print(f"[+] Passive OS fingerprinting with p0f initiated for {ip_range}.")
 
-# Run WhatWeb for web service analysis, which may include following all redirects in the future
-def run_whatweb(targets, scan_level):
-    for target in targets:
-        whatweb_cmd = f"whatweb -a {scan_level} {target} --open-timeout 6 --read-timeout 6 --log-xml=whatweb_output_{target.replace('.', '_')}.xml"
-        subprocess.run(whatweb_cmd, shell=True)
-    print("[+] WhatWeb scan completed.")
 
-# Perform reverse DNS lookup with dig, which is good for virtual web assets or multiple web instances running at one IP
+# Perform reverse DNS lookup with dig
 def run_dig(ip):
     ptr_records = []
     try:
@@ -130,9 +145,7 @@ def read_ip_ranges(args):
 
 # Main scanning workflow
 def main():
-
-    read_art_file()  # Read and display art.txt file at the start
-
+    read_art_file()  # Display art.txt file contents at the start
     args = setup_argparse()
     ip_ranges = read_ip_ranges(args)
 
@@ -142,19 +155,18 @@ def main():
     nmap_targets_tcp = [(ip, ",".join(ports)) for ip, ports in hosts_tcp.items()]
     run_nmap(nmap_targets_tcp, args.nmap_options)
 
-    # Step 2: Run Unicornscan for UDP and parse results
-    hosts_udp = {}
-    for ip_range in ip_ranges:
-        unicornscan_output = run_unicornscan(ip_range, COMMON_UDP_PORTS)
-        hosts_udp.update(parse_masscan_output(udp=True))
-
     # Step 3: Perform indirect UDP scans via TCP ports
     for host, tcp_ports in hosts_tcp.items():
         for udp_port in COMMON_UDP_PORTS.split(","):
             indirect_udp_scan(host, tcp_ports[0], udp_port)
 
     # Step 4: Run WhatWeb and p0f (if requested)
-    ptr_targets = {ip for ip in hosts_tcp.keys() for record in run_dig(ip)}
+    # Collect PTR records instead of IP addresses for WhatWeb targets
+    ptr_targets = set()
+    for ip in hosts_tcp.keys():
+        ptr_records = run_dig(ip)
+        ptr_targets.update(ptr_records)
+
     if ptr_targets:
         run_whatweb(ptr_targets, args.scan_level)
     if args.passive_os:
