@@ -6,7 +6,7 @@ def create_database():
     conn = sqlite3.connect("scan_results.db")
     cursor = conn.cursor()
 
-    # Create tables for hosts, ports (TCP and UDP), WhatWeb data, and certificates with 'updated_at' columns
+    # Create tables for Nmap, WhatWeb, and Certificates data with 'updated_at' columns
     cursor.execute('''CREATE TABLE IF NOT EXISTS hosts (
                         id INTEGER PRIMARY KEY,
                         ip TEXT,
@@ -15,12 +15,11 @@ def create_database():
                         state TEXT,
                         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
 
-    # Unified ports table for both TCP and UDP, differentiated by 'protocol' column
     cursor.execute('''CREATE TABLE IF NOT EXISTS ports (
                         id INTEGER PRIMARY KEY,
                         host_id INTEGER,
                         port INTEGER,
-                        protocol TEXT CHECK(protocol IN ('tcp', 'udp')),
+                        protocol TEXT,
                         state TEXT,
                         service TEXT,
                         product TEXT,
@@ -28,7 +27,6 @@ def create_database():
                         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY(host_id) REFERENCES hosts(id))''')
 
-    # WhatWeb data table
     cursor.execute('''CREATE TABLE IF NOT EXISTS whatweb (
                         id INTEGER PRIMARY KEY,
                         host_id INTEGER,
@@ -39,7 +37,7 @@ def create_database():
                         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY(host_id) REFERENCES hosts(id))''')
 
-    # Certificates table for SSL/TLS details
+    # Create a table for SSL/TLS certificate details with 'updated_at'
     cursor.execute('''CREATE TABLE IF NOT EXISTS certificates (
                         id INTEGER PRIMARY KEY,
                         host_id INTEGER,
@@ -60,7 +58,7 @@ def create_triggers():
     conn = sqlite3.connect("scan_results.db")
     cursor = conn.cursor()
 
-    # Create triggers for automatic timestamp updates
+    # Create triggers to automatically update the 'updated_at' column on insert and update
     tables = ["hosts", "ports", "whatweb", "certificates"]
     for table in tables:
         cursor.execute(f'''
@@ -106,10 +104,10 @@ def parse_xml_to_db(xml_file):
             cursor.execute("INSERT INTO hosts (ip, hostname, os, state) VALUES (?, ?, ?, ?)", (ip, hostname, os_name, state))
             host_id = cursor.lastrowid
 
-            # Insert port data (both TCP and UDP)
+            # Insert port data
             for port in host.findall(".//port"):
                 port_id = int(port.attrib.get("portid", 0))
-                protocol = port.attrib.get("protocol", "tcp")  # Identify protocol as 'tcp' or 'udp'
+                protocol = port.attrib.get("protocol", "tcp")
                 port_state = port.find("state").attrib.get("state", "unknown")
                 service = port.find("service").attrib.get("name", "unknown") if port.find("service") is not None else None
                 product = port.find("service").attrib.get("product", "") if port.find("service") is not None else ""
@@ -143,7 +141,7 @@ def parse_xml_to_db(xml_file):
                                 elif elem.attrib.get("key") == "days":
                                     expiration_days = int(elem.text)
 
-                    # Insert certificate data
+                    # Insert certificate data into the database
                     cursor.execute('''INSERT INTO certificates (host_id, port, issuer, subject, valid_from, valid_until, expiration_days)
                                       VALUES (?, ?, ?, ?, ?, ?, ?)''',
                                    (host_id, port_id, issuer, subject, valid_from, valid_until, expiration_days))
