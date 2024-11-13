@@ -93,7 +93,27 @@ def indirect_udp_scan(host, tcp_port, udp_port):
 def run_p0f(ip_range):
     cmd = f"p0f -i eth0 -o p0f_output_{ip_range.replace('/', '_')}.txt &"
     subprocess.run(cmd, shell=True)
+    print(f"[+] Passive OS fingerprinting with p0f initiated for {ip_range}.")
 
+# Run WhatWeb for web service analysis with enhanced performance options
+def run_whatweb(targets, scan_level):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        # Use ThreadPoolExecutor to run multiple WhatWeb scans in parallel
+        futures = [
+            executor.submit(scan_with_whatweb, target, scan_level) for target in targets
+        ]
+        # Collect and log results as they complete
+        for future in concurrent.futures.as_completed(futures):
+            future.result()  # Print or log each result as it completes
+
+def scan_with_whatweb(target, scan_level):
+    # Set command with the scan level and target without a timeout
+    whatweb_cmd = f"whatweb -a {scan_level} {target} --log-xml=whatweb_output_{target.replace('.', '_')}.xml"
+    try:
+        subprocess.run(whatweb_cmd, shell=True)  # No timeout specified
+        print(f"[+] WhatWeb scan completed for {target}")
+    except subprocess.CalledProcessError as e:
+        print(f"[!] WhatWeb scan failed for {target}: {e}")
 
 # Perform reverse DNS lookup with dig
 def run_dig(ip):
