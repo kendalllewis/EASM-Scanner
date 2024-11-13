@@ -2,7 +2,7 @@ EASM Scanner with SQLite Parser and Grafana Dashboard
 
 Overview
 
-This project provides a simple solution for External Attack Surface Management (EASM), combining network scanning, data parsing, and visualization. After running into a situation where the commercial tool we were using raised their prices astronomically, we needed to look for a cheaper replacement. I think Spiderfoot is a great OSINT tool, but we still needed a true scanner to stay on top of our external attack surface (ports, services, assets, status, etc). Solutions available were either way too expensive or were just scripts to run Masscan and Nmap. We needed a fast tool that would provide automated scanning and parsing dynamically, but also needed dashboard functionality. This tool leverages masscan, Nmap, and WhatWeb to identify and analyze open services, web technologies, and potential vulnerabilities across a target network. The results are parsed into a SQLite database for storage and further analysis. A Grafana JSON model is created from the results and is included for visualizing the scan data through a dynamic and multi-panel dashboard. We will work on scheduling functionality soon, so that we can set and forget on the scanning and parsing piece and focus on watching the dashboards, data, and metrics. This will allow us to do our primary job of tracking vulnerabilities, exploiting vulnerabilities, and looking for the "unintended".
+This project provides a simple solution for External Attack Surface Management (EASM), combining network scanning, data parsing, and visualization. After running into a situation where the commercial tool we were using raised their prices astronomically, we needed to look for a cheaper replacement. We considered just going with Spiderfoot which is a great OSINT tool, but we still needed a true scanner to stay on top of our external attack surface (ports, services, assets, status, etc). Solutions available were either way too expensive or were just scripts to run Masscan and Nmap. We needed a fast tool that would provide automated scanning and parsing dynamically while also providing dashboard functionality. This tool leverages masscan, Nmap, dig, and WhatWeb to identify and analyze open services, web technologies, and potential vulnerabilities across a target network. The results are parsed into a SQLite database for storage and further analysis. We then use the database as a datasource for Grafana to visualize the scan data through a dynamic and multi-panel dashboard. We will work on scheduling functionality soon, so that we can set and forget on the scanning and parsing piece and focus on watching the dashboards, data, and metrics. We will also extend the scanner to include other security modules as we can, but we need to make sure it is still fast. This will allow us to do our primary job of tracking vulnerabilities, exploiting vulnerabilities, and looking for the "unintended".
 
 This project is really an extension of the great work done by Hackertarget https://github.com/hackertarget/nmap-did-what/, but we needed to improve of scanning capabilities, adding more context to dashboards, and plan for a framework we can grow into.
 
@@ -42,7 +42,7 @@ SQLite Parser:
 Parses the combined scan results and stores the data in an SQLite database.
 Database schema includes tables for hosts, ports, and WhatWeb results, with fields for IP, service details, web plugins, SSL information, etc.
 
-Grafana JSON Model:
+Grafana:
 JSON configuration for creating a Grafana dashboard. There are some available in the Grafana public repository, which you can customize once imported.
 Pre-configured panels for visualizing network scan data, including tables and charts for service distribution, host analysis, and web technologies.
 Supports interactive filtering and drill-down capabilities.
@@ -64,7 +64,7 @@ Establish a Grafana JSON model in your Grafana instance.
 Connect Grafana to the SQLite database or use a middleware service to serve the data as a REST API. I would love to get there soon.
 
 Prerequisites
--Masscan, Nmap, WhatWeb installed on your system.
+-Masscan, Nmap, and WhatWeb installed on your system.
 -Python 3.x with the sqlite3 library.
 -Docker and Grafana for dashboard visualization.
 
