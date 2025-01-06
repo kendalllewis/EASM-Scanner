@@ -1,4 +1,5 @@
 EASM Scanner with SQLite Parser and Grafana Dashboard
+Note: This is the older version, requiring multiple steps to build database of results.
 
 Overview
 
